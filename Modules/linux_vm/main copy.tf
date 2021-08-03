@@ -53,6 +53,10 @@ resource "azurerm_linux_virtual_machine" "linuxvm" {
   admin_username      = "adminuser"
   admin_password      = "thisissofun11!"
   disable_password_authentication = false
+  depends_on = [
+    azurerm_public_ip.public_ip,
+    azurerm_network_interface.linux_nic
+  ]
   network_interface_ids = [
     azurerm_network_interface.linux_nic.id,
   ]
@@ -67,20 +71,20 @@ resource "azurerm_linux_virtual_machine" "linuxvm" {
     sku       = "16.04-LTS"
     version   = "latest"
   }
-  provisioner "remote-exec" {
-    connection {
-    type = "ssh"
-    host = azurerm_public_ip.public_ip.ip_address
-    user = "adminuser"
-    password = "thisissofun11!"
+  connection {
+  type = "ssh"
+  host = self.public_ip_address
+  user     = self.admin_username
+  password = self.admin_password
   }
-  inline = [
-    "sudo apt-get update",
-    "sudo apt-get install nginx -y"
-  ]
+  provisioner "remote-exec" {
+    inline = [
+      "sudo apt-get update",
+      "sudo apt-get install nginx -y"
+    ]
 }
-#   provisioner "file" {
-#     source      = "conf/myapp.conf"
-#     destination = "/etc/myapp.conf"
-#   }
+  provisioner "file" {
+    source      = "./something.txt"
+    destination = "./something.txt"
+}
 }
